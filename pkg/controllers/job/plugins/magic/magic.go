@@ -22,7 +22,7 @@ type magicPlugin struct {
 
 // New creates env plugin.
 func New(client pluginsinterface.PluginClientset, arguments []string) pluginsinterface.PluginInterface {
-	magicPlugin := magicPlugin{}
+	magicPlugin := magicPlugin{pluginArguments: arguments, Clientset: client}
 
 	return &magicPlugin
 }

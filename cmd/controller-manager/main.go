@@ -41,6 +41,8 @@ import (
 )
 
 func init() {
+	fmt.Println("Enter main init")
+	defer fmt.Println("Exit main init")
 	plugins.RegisterPluginBuilder(magic.Name, magic.New)
 }
 

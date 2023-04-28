@@ -3,15 +3,13 @@ kind: Job
 metadata:
   name: test-job
 spec:
-  minAvailable: 3
+  minAvailable: 1
   schedulerName: volcano
   policies:
     - event: PodEvicted
       action: RestartJob
   plugins:
-    ssh: []
-    env: []
-    svc: []
+    magic: []
   maxRetry: 5
   queue: default
   # Comment out the following section to enable volumes for job input/output.
@@ -26,7 +24,7 @@ spec:
   #        requests:
   #          storage: 1Gi
   tasks:
-    - replicas: 6
+    - replicas: 1
       name: "default-nginx"
       template:
         metadata:
