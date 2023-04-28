@@ -31,6 +31,8 @@ import (
 	"volcano.sh/volcano/cmd/webhook-manager/app"
 	"volcano.sh/volcano/cmd/webhook-manager/app/options"
 
+	"volcano.sh/volcano/pkg/controllers/job/plugins"
+	"volcano.sh/volcano/pkg/controllers/job/plugins/magic"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/jobs/mutate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/jobs/validate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/podgroups/mutate"
@@ -39,6 +41,10 @@ import (
 	_ "volcano.sh/volcano/pkg/webhooks/admission/queues/mutate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/queues/validate"
 )
+
+func init() {
+	plugins.RegisterPluginBuilder(magic.Name, magic.New)
+}
 
 var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum number of seconds between log flushes")
 
