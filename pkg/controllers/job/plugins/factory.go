@@ -57,11 +57,12 @@ func RegisterPluginBuilder(name string, pc PluginBuilder) {
 
 // RegisterCustomPluginBuilder register custom plugin builders.
 func RegisterCustomPluginBuilder(customPluginBuilder map[string]PluginBuilder) {
-	pluginMutex.Lock()
-	defer pluginMutex.Unlock()
-	for k, v := range customPluginBuilder {
-		klog.Infof("Registering plugin %s", k)
-		pluginBuilders[k] = v
+	for name, pc := range customPluginBuilder {
+		klog.Infof("Registering plugin %s", name)
+		RegisterPluginBuilder(name, pc)
+	}
+	for name := range pluginBuilders {
+		klog.Infof("Registered plugin %s", name)
 	}
 }
 
