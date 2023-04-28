@@ -40,12 +40,6 @@ import (
 	"volcano.sh/volcano/pkg/version"
 )
 
-func init() {
-	fmt.Println("Enter main init")
-	defer fmt.Println("Exit main init")
-	plugins.RegisterPluginBuilder(magic.Name, magic.New)
-}
-
 var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum number of seconds between log flushes")
 
 func main() {
@@ -74,6 +68,10 @@ func main() {
 	// The default klog flush interval is 30 seconds, which is frighteningly long.
 	go wait.Until(klog.Flush, *logFlushFreq, wait.NeverStop)
 	defer klog.Flush()
+
+	plugins.RegisterCustomPluginBuilder(map[string]plugins.PluginBuilder{
+		magic.Name: magic.New,
+	})
 
 	if err := app.Run(s); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)

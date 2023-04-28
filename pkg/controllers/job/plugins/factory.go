@@ -19,12 +19,12 @@ package plugins
 import (
 	"sync"
 
+	"k8s.io/klog/v2"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/distributed-framework/mpi"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/distributed-framework/pytorch"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/distributed-framework/tensorflow"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/env"
 	pluginsinterface "volcano.sh/volcano/pkg/controllers/job/plugins/interface"
-	"volcano.sh/volcano/pkg/controllers/job/plugins/magic"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/ssh"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/svc"
 )
@@ -36,7 +36,7 @@ func init() {
 	RegisterPluginBuilder("tensorflow", tensorflow.New)
 	RegisterPluginBuilder("mpi", mpi.New)
 	RegisterPluginBuilder("pytorch", pytorch.New)
-	RegisterPluginBuilder(magic.Name, magic.New)
+	// RegisterPluginBuilder(magic.Name, magic.New)
 }
 
 var pluginMutex sync.Mutex
@@ -53,6 +53,16 @@ func RegisterPluginBuilder(name string, pc PluginBuilder) {
 	defer pluginMutex.Unlock()
 
 	pluginBuilders[name] = pc
+}
+
+// RegisterCustomPluginBuilder register custom plugin builders.
+func RegisterCustomPluginBuilder(map[string]PluginBuilder) {
+	pluginMutex.Lock()
+	defer pluginMutex.Unlock()
+	for k, v := range pluginBuilders {
+		klog.Infof("Registering plugin %s", k)
+		pluginBuilders[k] = v
+	}
 }
 
 // GetPluginBuilder returns plugin builder for a given plugin name.

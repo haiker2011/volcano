@@ -5,9 +5,6 @@ metadata:
 spec:
   minAvailable: 1
   schedulerName: volcano
-  policies:
-    - event: PodEvicted
-      action: RestartJob
   plugins:
     magic: []
   maxRetry: 5
