@@ -30,4 +30,5 @@ RUN apk add --update ca-certificates && \
 
 COPY --from=builder /go/src/volcano.sh/volcano/_output/bin/vc-webhook-manager /vc-webhook-manager
 ADD ./installer/dockerfile/webhook-manager/gen-admission-secret.sh /gen-admission-secret.sh
+RUN chmod +x /gen-admission-secret.sh
 ENTRYPOINT ["/vc-webhook-manager"]
