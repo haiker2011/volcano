@@ -189,6 +189,7 @@ func (ip *ingressPlugin) createIngressIfNotExist(job *batch.Job) error {
 			return err
 		}
 
+		prefixPathType := networkingv1.PathTypePrefix
 		ing := &networkingv1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: job.Namespace,
@@ -208,7 +209,8 @@ func (ip *ingressPlugin) createIngressIfNotExist(job *batch.Job) error {
 							HTTP: &networkingv1.HTTPIngressRuleValue{
 								Paths: []networkingv1.HTTPIngressPath{
 									{
-										Path: ip.ingressPath,
+										Path:     ip.ingressPath,
+										PathType: &prefixPathType,
 										Backend: networkingv1.IngressBackend{
 											Service: &networkingv1.IngressServiceBackend{
 												Name: ip.svcName(job),
