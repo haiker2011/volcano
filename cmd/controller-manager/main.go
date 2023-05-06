@@ -31,6 +31,7 @@ import (
 	_ "volcano.sh/volcano/pkg/controllers/garbagecollector"
 	_ "volcano.sh/volcano/pkg/controllers/job"
 	"volcano.sh/volcano/pkg/controllers/job/plugins"
+	"volcano.sh/volcano/pkg/controllers/job/plugins/ingress"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/magic"
 	_ "volcano.sh/volcano/pkg/controllers/podgroup"
 	_ "volcano.sh/volcano/pkg/controllers/queue"
@@ -42,6 +43,7 @@ import (
 
 func init() {
 	plugins.RegisterPluginBuilder(magic.Name, magic.New)
+	plugins.RegisterPluginBuilder(ingress.Name, ingress.New)
 }
 
 var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum number of seconds between log flushes")
