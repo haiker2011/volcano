@@ -7,7 +7,7 @@ spec:
   schedulerName: volcano
   plugins:
     magic: []
-    ingress: ["--ingress-class=nginx", "--ingress-path=/", "--svc-port=6060"]
+    ingress: ["--ingress-class=nginx", "--ingress-path=/", "--svc-port=6060", "--rewrite-target=/$1", "--prefix-path-type=Exact"]
   maxRetry: 5
   queue: default
   # Comment out the following section to enable volumes for job input/output.
