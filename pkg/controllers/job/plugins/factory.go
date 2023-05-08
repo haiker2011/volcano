@@ -35,7 +35,6 @@ func init() {
 	RegisterPluginBuilder("tensorflow", tensorflow.New)
 	RegisterPluginBuilder("mpi", mpi.New)
 	RegisterPluginBuilder("pytorch", pytorch.New)
-	// RegisterPluginBuilder(magic.Name, magic.New)
 }
 
 var pluginMutex sync.Mutex

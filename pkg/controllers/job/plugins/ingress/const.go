@@ -1,7 +1,7 @@
 package ingress
 
 const (
-	IngressClass = "nginx"
-	IngressPath  = "/"
-	SVCPort      = 80
+	DefaultIngressClass = "nginx"
+	DefaultIngressPath  = "/"
+	DefaultSVCPort      = 80
 )

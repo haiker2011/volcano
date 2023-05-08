@@ -32,14 +32,17 @@ type ingressPlugin struct {
 	ingressHost              string
 	ingressPath              string
 	svcPort                  int
+	rewriteTarget            string
+	prefixPathType           string
 }
 
 // New creates env plugin.
 func New(client pluginsinterface.PluginClientset, arguments []string) pluginsinterface.PluginInterface {
 	ingressPlugin := ingressPlugin{pluginArguments: arguments, Clientset: client,
-		ingressClass: IngressClass,
-		ingressPath:  IngressPath,
-		svcPort:      SVCPort,
+		ingressClass:   DefaultIngressClass,
+		ingressPath:    DefaultIngressPath,
+		svcPort:        DefaultSVCPort,
+		prefixPathType: string(networkingv1.PathTypePrefix),
 	}
 	ingressPlugin.addFlags()
 	return &ingressPlugin
@@ -63,6 +66,10 @@ func (ip *ingressPlugin) addFlags() {
 		"set ingress path, it is `/` by default.")
 	flagSet.IntVar(&ip.svcPort, "svc-port", ip.svcPort,
 		"set svc port, it is `80` by default.")
+	flagSet.StringVar(&ip.rewriteTarget, "rewrite-target", ip.rewriteTarget,
+		"set rewrite target, it is `/` by default.")
+	flagSet.StringVar(&ip.prefixPathType, "prefix-path-type", ip.prefixPathType,
+		"set prefix path type, it is `PrefixPathType` by default.")
 
 	if err := flagSet.Parse(ip.pluginArguments); err != nil {
 		klog.Errorf("plugin %s flagset parse failed, err: %v", ip.Name(), err)
@@ -189,14 +196,19 @@ func (ip *ingressPlugin) createIngressIfNotExist(job *batch.Job) error {
 			return err
 		}
 
-		prefixPathType := networkingv1.PathTypePrefix
+		annotations := map[string]string{
+			"kubernetes.io/ingress.class": ip.ingressClass,
+		}
+		if ip.rewriteTarget != "" && ip.ingressClass == DefaultIngressClass {
+			annotations["nginx.ingress.kubernetes.io/rewrite-target"] = ip.rewriteTarget
+		}
+
+		prefixPathType := networkingv1.PathType(ip.prefixPathType)
 		ing := &networkingv1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: job.Namespace,
-				Name:      job.Name,
-				Annotations: map[string]string{
-					"kubernetes.io/ingress.class": ip.ingressClass,
-				},
+				Namespace:   job.Namespace,
+				Name:        job.Name,
+				Annotations: annotations,
 				OwnerReferences: []metav1.OwnerReference{
 					*metav1.NewControllerRef(job, helpers.JobKind),
 				},
