@@ -61,11 +61,43 @@ func (spp *sshpiperPlugin) OnPodCreate(pod *corev1.Pod, job *batch.Job) error {
 
 func (spp *sshpiperPlugin) OnJobAdd(job *batch.Job) error {
 	klog.V(4).Info("sshpiper plugin OnJobAdd")
+	if job.Status.ControlledResources["plugin-"+spp.Name()] == spp.Name() {
+		return nil
+	}
+	// Create Secret for Job.
+	if err := spp.createSecretIfNotExist(job); err != nil {
+		return err
+	}
+	// Create Pipe for Job.
+	if err := spp.createPipeIfNotExist(job); err != nil {
+		return err
+	}
+
+	job.Status.ControlledResources["plugin-"+spp.Name()] = spp.Name()
 	return nil
 }
 
 func (spp *sshpiperPlugin) OnJobDelete(job *batch.Job) error {
 	klog.V(4).Info("sshpiper plugin OnJobDelete")
+	if job.Status.ControlledResources["plugin-"+spp.Name()] != spp.Name() {
+		return nil
+	}
+	// Delete Pipe for Job.
+	if err := spp.Clientset.SSHPiperClient.SshpiperV1beta1().Pipes(job.Namespace).Delete(context.TODO(), spp.pipeName, metav1.DeleteOptions{}); err != nil {
+		if !apierrors.IsNotFound(err) {
+			klog.V(3).Infof("Failed to delete Pipe for Job <%s/%s>: %v", job.Namespace, job.Name, err)
+			return err
+		}
+	}
+	// Delete Secret for Job.
+	if err := spp.Clientset.KubeClients.CoreV1().Secrets(job.Namespace).Delete(context.TODO(), spp.secretName, metav1.DeleteOptions{}); err != nil {
+		if !apierrors.IsNotFound(err) {
+			klog.V(3).Infof("Failed to delete Secret for Job <%s/%s>: %v", job.Namespace, job.Name, err)
+			return err
+		}
+	}
+
+	delete(job.Status.ControlledResources, "plugin-"+spp.Name())
 	return nil
 }
 
