@@ -20,12 +20,14 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
+	sshpiper "github.com/tg123/sshpiper/plugin/kubernetes/generated/clientset/versioned"
 	vcbatch "volcano.sh/apis/pkg/apis/batch/v1alpha1"
 )
 
 // PluginClientset clientset.
 type PluginClientset struct {
-	KubeClients kubernetes.Interface
+	KubeClients    kubernetes.Interface
+	SSHPiperClient *sshpiper.Clientset
 }
 
 // PluginInterface interface.

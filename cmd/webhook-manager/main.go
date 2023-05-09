@@ -34,6 +34,7 @@ import (
 	"volcano.sh/volcano/pkg/controllers/job/plugins"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/ingress"
 	"volcano.sh/volcano/pkg/controllers/job/plugins/magic"
+	"volcano.sh/volcano/pkg/controllers/job/plugins/sshpiper"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/jobs/mutate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/jobs/validate"
 	_ "volcano.sh/volcano/pkg/webhooks/admission/podgroups/mutate"
@@ -46,6 +47,7 @@ import (
 func init() {
 	plugins.RegisterPluginBuilder(magic.Name, magic.New)
 	plugins.RegisterPluginBuilder(ingress.Name, ingress.New)
+	plugins.RegisterPluginBuilder(sshpiper.Name, sshpiper.New)
 }
 
 var logFlushFreq = pflag.Duration("log-flush-frequency", 5*time.Second, "Maximum number of seconds between log flushes")

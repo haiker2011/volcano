@@ -8,6 +8,7 @@ spec:
   plugins:
     magic: []
     ingress: ["--ingress-class=nginx", "--ingress-path=/", "--svc-port=6060", "--rewrite-target=/$1", "--prefix-path-type=Exact"]
+    sshpiper: ["--secret-name=test", "--pipe-name=test", "--ssh-private-key=test", "--authorized-keys=test", "--toHost=localhost:2222", "--toUser=root"]
   maxRetry: 5
   queue: default
   # Comment out the following section to enable volumes for job input/output.
