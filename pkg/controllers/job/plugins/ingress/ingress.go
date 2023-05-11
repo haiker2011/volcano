@@ -197,7 +197,7 @@ func (ip *ingressPlugin) createIngressIfNotExist(job *batch.Job) error {
 		}
 
 		annotations := map[string]string{
-			"kubernetes.io/ingress.class": ip.ingressClass,
+			// "kubernetes.io/ingress.class": ip.ingressClass,
 		}
 		if ip.rewriteTarget != "" && ip.ingressClass == DefaultIngressClass {
 			annotations["nginx.ingress.kubernetes.io/rewrite-target"] = ip.rewriteTarget
@@ -214,6 +214,7 @@ func (ip *ingressPlugin) createIngressIfNotExist(job *batch.Job) error {
 				},
 			},
 			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ip.ingressClass,
 				Rules: []networkingv1.IngressRule{
 					{
 						Host: ip.ingressHost,
