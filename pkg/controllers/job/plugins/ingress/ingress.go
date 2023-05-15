@@ -96,11 +96,6 @@ func (ip *ingressPlugin) OnJobAdd(job *batch.Job) error {
 		return err
 	}
 
-	if !ip.disableNetworkPolicy {
-		if err := ip.createNetworkPolicyIfNotExist(job); err != nil {
-			return err
-		}
-	}
 	job.Status.ControlledResources["plugin-"+ip.Name()] = ip.Name()
 
 	return nil
@@ -127,14 +122,6 @@ func (ip *ingressPlugin) OnJobDelete(job *batch.Job) error {
 	}
 	delete(job.Status.ControlledResources, "plugin-"+ip.Name())
 
-	if !ip.disableNetworkPolicy {
-		if err := ip.Clientset.KubeClients.NetworkingV1().NetworkPolicies(job.Namespace).Delete(context.TODO(), job.Name, metav1.DeleteOptions{}); err != nil {
-			if !apierrors.IsNotFound(err) {
-				klog.Errorf("Failed to delete Network policy of Job %v/%v: %v", job.Namespace, job.Name, err)
-				return err
-			}
-		}
-	}
 	return nil
 }
 
@@ -170,7 +157,6 @@ func (ip *ingressPlugin) createServiceIfNotExist(job *batch.Job) error {
 						Name:       "http",
 						Port:       80,
 						TargetPort: intstr.FromInt(ip.svcPort),
-						Protocol:   v1.ProtocolTCP,
 					},
 				},
 				PublishNotReadyAddresses: ip.publishNotReadyAddresses,
@@ -246,55 +232,6 @@ func (ip *ingressPlugin) createIngressIfNotExist(job *batch.Job) error {
 			return e
 		}
 
-		job.Status.ControlledResources["plugin-"+ip.Name()] = ip.Name()
-	}
-
-	return nil
-}
-
-// Limit pods can be accessible only by pods belong to the job.
-func (ip *ingressPlugin) createNetworkPolicyIfNotExist(job *batch.Job) error {
-	// If network policy does not exist, create one for Job.
-	if _, err := ip.Clientset.KubeClients.NetworkingV1().NetworkPolicies(job.Namespace).Get(context.TODO(), job.Name, metav1.GetOptions{}); err != nil {
-		if !apierrors.IsNotFound(err) {
-			klog.V(3).Infof("Failed to get NetworkPolicy for Job <%s/%s>: %v",
-				job.Namespace, job.Name, err)
-			return err
-		}
-
-		networkpolicy := &networkingv1.NetworkPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: job.Namespace,
-				Name:      job.Name,
-				OwnerReferences: []metav1.OwnerReference{
-					*metav1.NewControllerRef(job, helpers.JobKind),
-				},
-			},
-			Spec: networkingv1.NetworkPolicySpec{
-				PodSelector: metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						batch.JobNameKey:      job.Name,
-						batch.JobNamespaceKey: job.Namespace,
-					},
-				},
-				Ingress: []networkingv1.NetworkPolicyIngressRule{{
-					From: []networkingv1.NetworkPolicyPeer{{
-						PodSelector: &metav1.LabelSelector{
-							MatchLabels: map[string]string{
-								batch.JobNameKey:      job.Name,
-								batch.JobNamespaceKey: job.Namespace,
-							},
-						},
-					}},
-				}},
-				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
-			},
-		}
-
-		if _, e := ip.Clientset.KubeClients.NetworkingV1().NetworkPolicies(job.Namespace).Create(context.TODO(), networkpolicy, metav1.CreateOptions{}); e != nil {
-			klog.V(3).Infof("Failed to create Service for Job <%s/%s>: %v", job.Namespace, job.Name, e)
-			return e
-		}
 		job.Status.ControlledResources["plugin-"+ip.Name()] = ip.Name()
 	}
 
